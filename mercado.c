@@ -43,7 +43,7 @@ void infoProduto(Produto prod) {
 void menu() {
 	printf("======================================\n");
 	printf("============ Bem-Vindo(a) ============\n");
-	printf("============== C Shop ================\n ");
+	printf("============== C Shop ================\n");
 	printf("======================================\n");
 
 	printf("Selecione uma opção abaixo: \n");
@@ -76,11 +76,11 @@ void menu() {
 			fecharPedido();
 			break;
 		case 6:
-			printf("VOLTE SEMPRE. OBRIGADO(A)!\n");
+			printf("OBRIGADO(A). VOLTE SEMPRE!\n");
 			Sleep(2);
 			exit(0);
 		default:
-			printf("OPÇAO INVÁLIDA!!\n");
+			printf("OPÇÃO INVÁLIDA!!\n");
 			Sleep(2);
 			menu();
 			break;
@@ -92,16 +92,19 @@ void cadastrarProduto() {
 	printf("====================\n");
 
 	printf("Informe o nome do Produto: \n");
+	fflush(stdout);
 	fgets(produtos[contadorProduto].nome, 30, stdin);
 
 	printf("Informe o preço do produto: \n");
 	fflush(stdout);
 	scanf("%f", &produtos[contadorProduto].preco);
 
-	printf("O produto foi cadastrado com Sucesso!\n", strtok(produtos[contadorProduto].nome, "\n"));
+	printf("O produto %s foi cadastrado com Sucesso!\n", strtok(produtos[contadorProduto].nome, "\n"));
 
 	produtos[contadorProduto].codigo = (contadorProduto + 1);
 	contadorProduto++;
+	Sleep(2);
+	menu();
 }
 void listarProdutos() {
 	if(contadorProduto > 0) {
@@ -111,28 +114,92 @@ void listarProdutos() {
 			infoProduto(produtos[i]);
 			printf("-----------------\n");
 			Sleep(1);
-
 		}
+		Sleep(2);
+		menu();
 	}else {
 		printf("Não temos ainda produtos cadastrados.\n");
+		Sleep(2);
+		menu();
 	}
 }
 
 void comprarProduto() {
+	if(contadorProduto > 0) {
+		printf("Informe o código do produto que deseja adicionar ao carrinho.\n");
 
+		printf("=========== Produtos Disponíveis ===========\n");
+		for(int i = 0; i < contadorProduto; i++) {
+			infoProduto(produtos[i]);
+			printf("-----------------------\n");
+			Sleep(1);
+		}
+		int codigo;
+		fflush(stdout);
+		scanf("%d", &codigo);
+		getchar();
+
+		int temMercado = 0;
+		for(int i = 0; i < contadorProduto; i++) {
+			if(produtos[i].codigo == codigo) {
+				temMercado = 1;
+
+				if(contadorCarrinho > 0) {
+					int * retorno = temNoCarrinho(codigo);
+
+					if(retorno[0] == 1) {
+						carrinho[retorno[1]].quantidade++;
+						printf("Aumentei a quantidade do produto %s já existente no carrinho.\n",
+								strtok(carrinho[retorno[1]].produto.nome, "\n"));
+						Sleep(2);
+						menu();
+					}else{
+						Produto p = pegarProdutoPorCodigo(codigo);
+						carrinho[contadorCarrinho].produto = p;
+						carrinho[contadorCarrinho].quantidade = 1;
+						contadorCarrinho++;
+						printf("O produto %s foi adicionado ao carrinho.\n", strtok(p.nome, "\n"));
+						Sleep(2);
+						menu();
+					}
+				}else{
+					Produto p = pegarProdutoPorCodigo(codigo);
+					carrinho[contadorCarrinho].produto = p;
+					carrinho[contadorCarrinho].quantidade = 1;
+					contadorCarrinho++;
+					printf("O produto %s foi adicionado ao carrinho.\n", strtok(p.nome, "\n"));
+					Sleep(2);
+					menu();
+				}
+			}
+		}
+		if(temMercado < 1) {
+			printf("Não foi encontrado o produto com código %d\n", codigo);
+			Sleep(2);
+			menu();
+		}
+	}else{
+		printf("Ainda não existem produtos para vender.\n");
+		Sleep(2);
+		menu();
+	}
 }
 void visualizarCarrinho() {
 	if(contadorCarrinho > 0) {
 		printf("Produtos do Carrinho\n");
 		printf("---------------------\n");
 		for(int i = 0; i < contadorCarrinho; i++) {
+			infoProduto(carrinho[i].produto);
 			printf("Quantidade: %d\n", carrinho[i].quantidade);
 			printf("---------------\n");
 			Sleep(1);
 		}
-
+		Sleep(2);
+		menu();
 	}else {
 		printf("Não temos ainda produtos no carrinho!\n");
+		Sleep(2);
+		menu();
 	}
 }
 Produto pegarProdutoPorCodigo(int codigo) {
@@ -145,7 +212,7 @@ Produto pegarProdutoPorCodigo(int codigo) {
 	return p;
 }
 int * temNoCarrinho(int codigo) {
-	int static retorno[] = (0,0);
+	int static retorno[] = {0,0};
 	for(int i = 0; i < contadorCarrinho; i++) {
 		if(carrinho[i].produto.codigo == codigo) {
 			retorno[0] = 1; //Tem o produto com este código no carrinho
